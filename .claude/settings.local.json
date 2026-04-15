@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(npm --version)",
-      "WebFetch(domain:coss.com)"
-    ]
-  }
-}
