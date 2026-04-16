@@ -2,38 +2,40 @@ import { NextRequest, NextResponse } from "next/server";
 import { anthropic, AUDIT_SYSTEM_PROMPT, AuditData } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
 
-async function microlinkScreenshot(targetUrl: string): Promise<string | null> {
-  const params = new URLSearchParams({
-    url: targetUrl,
-    screenshot: "true",
-    meta: "false",
-    "screenshot.type": "jpeg",
-    "screenshot.quality": "85",
-    "screenshot.fullPage": "false",
-  });
-  const res = await fetch(`https://api.microlink.io?${params}`, {
-    signal: AbortSignal.timeout(20000),
-  });
-  const json = await res.json();
-  // Microlink retourne status "success" si la page a bien été chargée
-  if (json?.status !== "success") return null;
-  return json?.data?.screenshot?.url ?? null;
+async function resolveScreenshotUrl(url: string): Promise<string> {
+  // Vérifie si le site répond correctement en HTTPS
+  // Si le cert est invalide, fetch lève une erreur → on bascule en HTTP
+  try {
+    await fetch(url, {
+      method: "HEAD",
+      signal: AbortSignal.timeout(8000),
+      redirect: "follow",
+    });
+    return url; // HTTPS OK
+  } catch {
+    // Cert invalide ou autre erreur TLS → on essaie HTTP
+    return url.replace(/^https:\/\//i, "http://");
+  }
 }
 
 async function fetchScreenshot(url: string): Promise<string | null> {
   try {
-    // Essai 1 : URL telle quelle (HTTPS)
-    const result = await microlinkScreenshot(url);
-    if (result) return result;
+    const targetUrl = await resolveScreenshotUrl(url);
 
-    // Essai 2 : fallback HTTP si le cert SSL est invalide
-    const httpUrl = url.replace(/^https:\/\//i, "http://");
-    if (httpUrl !== url) {
-      const httpResult = await microlinkScreenshot(httpUrl);
-      if (httpResult) return httpResult;
-    }
+    const params = new URLSearchParams({
+      url: targetUrl,
+      screenshot: "true",
+      meta: "false",
+      "screenshot.type": "jpeg",
+      "screenshot.quality": "85",
+      "screenshot.fullPage": "false",
+    });
 
-    return null;
+    const res = await fetch(`https://api.microlink.io?${params}`, {
+      signal: AbortSignal.timeout(20000),
+    });
+    const json = await res.json();
+    return json?.data?.screenshot?.url ?? null;
   } catch {
     return null;
   }
