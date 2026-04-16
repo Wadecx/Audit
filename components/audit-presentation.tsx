@@ -212,9 +212,31 @@ function buildSlides(url: string, data: AuditData & { globalScore: number }, cre
         <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(248,113,113,.08),rgba(10,10,15,.7))"></div>
       </div>
     </div>` : `
-    <div style="border-radius:12px;border:2px solid rgba(248,113,113,.3);background:rgba(248,113,113,.05);height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem">
-      <div style="font-size:3rem">🚫</div>
-      <p style="color:rgba(248,113,113,.8);font-size:.85rem;text-align:center;padding:0 1rem">Site web non sécurisé<br/><span style="color:rgba(255,255,255,.3);font-size:.75rem">Design dépassé · Performances faibles · SEO inexistant</span></p>
+    <!-- Fallback : mockup "ancien site" stylisé -->
+    <div style="border-radius:12px;overflow:hidden;border:2px solid rgba(248,113,113,.3);box-shadow:0 0 40px rgba(248,113,113,.08)">
+      <div style="background:#1e1e1e;padding:.5rem .75rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="display:flex;gap:.3rem">
+          <span style="width:10px;height:10px;border-radius:50%;background:#f87171;display:inline-block"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#fbbf24;display:inline-block"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#4ade80;display:inline-block"></span>
+        </div>
+        <div style="flex:1;background:#111;border-radius:5px;padding:.25rem .6rem;display:flex;align-items:center;gap:.4rem">
+          <span style="font-size:.65rem;color:#f87171;font-weight:700">⚠ Site web non sécurisé</span>
+          <span style="font-size:.65rem;color:rgba(255,255,255,.3)">${domain}</span>
+        </div>
+      </div>
+      <div style="background:#f5f5f5;padding:1.5rem;min-height:200px;display:flex;flex-direction:column;gap:.75rem;filter:saturate(.4) brightness(.7)">
+        <div style="height:40px;background:#ccc;border-radius:4px;width:100%"></div>
+        <div style="display:flex;gap:.75rem">
+          <div style="height:120px;background:#ddd;border-radius:4px;width:60%"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:.5rem">
+            <div style="height:16px;background:#ccc;border-radius:3px"></div>
+            <div style="height:16px;background:#ccc;border-radius:3px;width:80%"></div>
+            <div style="height:16px;background:#ccc;border-radius:3px;width:60%"></div>
+          </div>
+        </div>
+        <div style="height:20px;background:#bbb;border-radius:3px;width:40%"></div>
+      </div>
     </div>`;
 
   const s8 = `

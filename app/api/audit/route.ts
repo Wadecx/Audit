@@ -4,10 +4,19 @@ import { prisma } from "@/lib/prisma";
 
 async function fetchScreenshot(url: string): Promise<string | null> {
   try {
-    const res = await fetch(
-      `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`,
-      { signal: AbortSignal.timeout(15000) }
-    );
+    // ignoreHttpsErrors permet de capturer les sites avec certificats invalides
+    const params = new URLSearchParams({
+      url,
+      screenshot: "true",
+      meta: "false",
+      "screenshot.type": "jpeg",
+      "screenshot.quality": "80",
+      "screenshot.fullPage": "false",
+      ignoreHttpsErrors: "true",
+    });
+    const res = await fetch(`https://api.microlink.io?${params}`, {
+      signal: AbortSignal.timeout(20000),
+    });
     const json = await res.json();
     return json?.data?.screenshot?.url ?? null;
   } catch {
