@@ -41,39 +41,52 @@ function buildSlides(url: string, data: AuditData & { globalScore: number }, cre
   const col = scoreColor(data.globalScore);
 
   /* ── SLIDE 1 — Couverture ── */
+  const screenshotHtml = data.screenshotUrl ? `
+    <!-- Screenshot du site -->
+    <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1);box-shadow:0 24px 60px rgba(0,0,0,.6);max-width:520px;width:100%">
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(10,10,15,.95));z-index:1;pointer-events:none"></div>
+      <img src="${data.screenshotUrl}" alt="Screenshot de ${domain}" style="width:100%;display:block;object-fit:cover;max-height:280px" />
+      <div style="position:absolute;bottom:.6rem;left:.8rem;z-index:2;display:flex;align-items:center;gap:.4rem;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);border-radius:6px;padding:.25rem .6rem">
+        <span style="width:6px;height:6px;border-radius:50%;background:#34d399;display:inline-block"></span>
+        <span style="font-size:.6rem;color:rgba(255,255,255,.7)">${url}</span>
+      </div>
+    </div>` : "";
+
   const s1 = `
 <section data-background-gradient="radial-gradient(ellipse 90% 70% at 50% 0%, rgba(139,92,246,.25) 0%, rgba(10,10,15,1) 70%)">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:2.5rem;padding:2rem">
+  <div style="display:grid;grid-template-columns:${data.screenshotUrl ? "1fr 1fr" : "1fr"};gap:3rem;align-items:center;height:100%;padding:2rem;max-width:1100px;margin:0 auto">
 
-    <!-- Logo agence -->
-    <div style="display:flex;align-items:center;gap:.75rem">
-      <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff;flex-shrink:0">V</div>
-      <span style="font-size:1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7)">Very Agency</span>
+    <!-- Colonne gauche : infos -->
+    <div style="display:flex;flex-direction:column;gap:2rem;align-items:flex-start">
+      <!-- Logo agence -->
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff;flex-shrink:0">V</div>
+        <span style="font-size:1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7)">Very Agency</span>
+      </div>
+
+      <!-- Titre -->
+      <div>
+        <p style="font-size:.7rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(139,92,246,.8);margin:0 0 .6rem">Audit Digital</p>
+        <h1 style="font-size:${data.screenshotUrl ? "3rem" : "3.8rem"};font-weight:900;letter-spacing:-.04em;margin:0;line-height:1;color:#fff">${domain}</h1>
+      </div>
+
+      <!-- Date -->
+      <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:.4rem 1.2rem;font-size:.75rem;color:rgba(255,255,255,.4)">
+        <span>📅</span>${date}
+      </div>
+
+      <!-- 5 axes -->
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        ${AXIS_CONFIG.map(a => `
+          <div style="display:flex;align-items:center;gap:.4rem;padding:.3rem .7rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:999px">
+            <span style="font-size:.85rem">${a.icon}</span>
+            <span style="font-size:.62rem;color:rgba(255,255,255,.5)">${a.label}</span>
+          </div>`).join("")}
+      </div>
     </div>
 
-    <!-- Séparateur -->
-    <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.6),transparent)"></div>
-
-    <!-- Titre -->
-    <div style="text-align:center">
-      <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(139,92,246,.8);margin:0 0 .75rem">Audit Digital</p>
-      <h1 style="font-size:3.8rem;font-weight:900;letter-spacing:-.04em;margin:0;line-height:1;color:#fff">${domain}</h1>
-      <p style="margin:.75rem 0 0;color:rgba(255,255,255,.35);font-size:.95rem">${url}</p>
-    </div>
-
-    <!-- Date -->
-    <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:.4rem 1.2rem;font-size:.75rem;color:rgba(255,255,255,.4)">
-      <span>📅</span>${date}
-    </div>
-
-    <!-- 5 axes -->
-    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center">
-      ${AXIS_CONFIG.map(a => `
-        <div style="display:flex;align-items:center;gap:.5rem;padding:.4rem .9rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:999px">
-          <span>${a.icon}</span>
-          <span style="font-size:.7rem;color:rgba(255,255,255,.5)">${a.label}</span>
-        </div>`).join("")}
-    </div>
+    <!-- Colonne droite : screenshot -->
+    ${screenshotHtml}
   </div>
 </section>`;
 

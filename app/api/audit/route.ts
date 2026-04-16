@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { anthropic, AUDIT_SYSTEM_PROMPT, AuditData } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
 
+async function fetchScreenshot(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`,
+      { signal: AbortSignal.timeout(15000) }
+    );
+    const json = await res.json();
+    return json?.data?.screenshot?.url ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
@@ -10,32 +23,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "URL invalide" }, { status: 400 });
     }
 
-    // Normalise l'URL
     const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
 
-    const message = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 4000,
-      system: AUDIT_SYSTEM_PROMPT,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }] as any,
-      messages: [
-        {
-          role: "user",
-          content: `Audite ce site web : ${normalizedUrl}
+    // Appels en parallèle : audit Anthropic + screenshot Microlink
+    const [message, screenshotUrl] = await Promise.all([
+      anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 4000,
+        system: AUDIT_SYSTEM_PROMPT,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }] as any,
+        messages: [
+          {
+            role: "user",
+            content: `Audite ce site web : ${normalizedUrl}\n\nCommence par une recherche web approfondie sur ce site, puis génère le JSON d'audit complet.`,
+          },
+        ],
+      }),
+      fetchScreenshot(normalizedUrl),
+    ]);
 
-Commence par une recherche web approfondie sur ce site, puis génère le JSON d'audit complet.`,
-        },
-      ],
-    });
-
-    // Extrait tous les blocs texte et les concatène
+    // Extrait le JSON de la réponse Anthropic
     const fullText = message.content
       .filter((b) => b.type === "text")
       .map((b) => (b as { type: "text"; text: string }).text)
       .join("");
 
-    // Trouve le premier { et le dernier } pour extraire le JSON brut
     const jsonStart = fullText.indexOf("{");
     const jsonEnd = fullText.lastIndexOf("}");
     if (jsonStart === -1 || jsonEnd === -1) {
@@ -43,7 +56,7 @@ Commence par une recherche web approfondie sur ce site, puis génère le JSON d'
     }
     const auditData: AuditData = JSON.parse(fullText.slice(jsonStart, jsonEnd + 1));
 
-    // Calcule le score global
+    // Score global
     const scores = [
       auditData.design.score,
       auditData.technique.score,
@@ -53,16 +66,16 @@ Commence par une recherche web approfondie sur ce site, puis génère le JSON d'
     ];
     const globalScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 
-    // Sauvegarde en DB
+    // Sauvegarde en DB (avec screenshot URL si disponible)
     const audit = await prisma.audit.create({
       data: {
         url: normalizedUrl,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: { ...auditData, globalScore } as any,
+        data: { ...auditData, globalScore, screenshotUrl } as any,
       },
     });
 
-    return NextResponse.json({ id: audit.id, globalScore });
+    return NextResponse.json({ id: audit.id, globalScore, screenshotUrl });
   } catch (error) {
     console.error("Erreur audit:", error);
     if (error instanceof SyntaxError) {

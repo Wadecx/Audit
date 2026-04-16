@@ -12,6 +12,7 @@ export interface AxisData {
 }
 
 export interface AuditData {
+  screenshotUrl?: string;
   synthese_globale: string;
   design: AxisData;
   technique: AxisData;
@@ -51,4 +52,5 @@ RÈGLES STRICTES :
 - Exactement 3 points_forts et 3 points_faibles par axe
 - Scores réalistes et différenciés entre les axes
 - Sois précis, percutant, orienté business. Ton audience = des dirigeants d'entreprise
+- Fait extrêmement attention à la qualité de ton français, pas de fautes, pas de phrases maladroites
 - Réponds UNIQUEMENT avec le JSON brut`;

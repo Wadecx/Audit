@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const AUDIT_STEPS = [
+  "Capture du site en cours…",
   "Analyse du design & UX…",
   "Audit technique en cours…",
   "SEO & géolocalisation…",
@@ -20,6 +21,7 @@ export function AuditForm() {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +30,14 @@ export function AuditForm() {
     setLoading(true);
     setError("");
     setCurrentStep(0);
+    setPreviewUrl(null);
+
+    // Capture le screenshot en parallèle pour l'afficher dans le loader
+    const normalized = url.trim().startsWith("http") ? url.trim() : `https://${url.trim()}`;
+    fetch(`https://api.microlink.io?url=${encodeURIComponent(normalized)}&screenshot=true&meta=false`)
+      .then((r) => r.json())
+      .then((d) => { if (d?.data?.screenshot?.url) setPreviewUrl(d.data.screenshot.url); })
+      .catch(() => {});
 
     // Simule la progression des étapes pendant l'appel API
     const stepInterval = setInterval(() => {
@@ -63,18 +73,34 @@ export function AuditForm() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center gap-8 w-full max-w-lg">
-        {/* Spinner */}
-        <div className="relative w-24 h-24">
-          <div className="absolute inset-0 rounded-full border-4 border-violet-500/20" />
-          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-violet-500 animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl">🔍</span>
+      <div className="flex flex-col items-center gap-6 w-full max-w-xl">
+
+        {/* Aperçu screenshot + spinner superposé */}
+        <div className="relative w-full rounded-xl overflow-hidden border border-white/10 bg-white/5">
+          {previewUrl ? (
+            <>
+              <img
+                src={previewUrl}
+                alt="Aperçu du site"
+                className="w-full object-cover max-h-48 opacity-60"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0f] via-[#0a0a0f]/40 to-transparent" />
+            </>
+          ) : (
+            <div className="w-full h-36 flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-violet-500/40 border-t-violet-500 rounded-full animate-spin" />
+            </div>
+          )}
+
+          {/* Badge en haut */}
+          <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5">
+            <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+            <span className="text-xs text-white/80 font-medium">Analyse en cours…</span>
           </div>
         </div>
 
         {/* Étapes */}
-        <div className="w-full space-y-3">
+        <div className="w-full space-y-2.5">
           {AUDIT_STEPS.map((step, i) => (
             <div
               key={step}
@@ -82,7 +108,7 @@ export function AuditForm() {
                 i < currentStep
                   ? "opacity-40"
                   : i === currentStep
-                  ? "opacity-100 scale-[1.02]"
+                  ? "opacity-100 scale-[1.01]"
                   : "opacity-20"
               }`}
             >
@@ -95,21 +121,15 @@ export function AuditForm() {
                     : "bg-white/20"
                 }`}
               />
-              <span
-                className={`text-sm font-medium ${
-                  i === currentStep ? "text-white" : "text-white/50"
-                }`}
-              >
+              <span className={`text-sm font-medium ${i === currentStep ? "text-white" : "text-white/50"}`}>
                 {step}
               </span>
-              {i < currentStep && (
-                <span className="ml-auto text-violet-400 text-xs">✓</span>
-              )}
+              {i < currentStep && <span className="ml-auto text-violet-400 text-xs">✓</span>}
             </div>
           ))}
         </div>
 
-        <p className="text-white/40 text-xs text-center">
+        <p className="text-white/30 text-xs text-center">
           L&apos;audit peut prendre 30 à 60 secondes
         </p>
       </div>
