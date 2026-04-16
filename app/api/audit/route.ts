@@ -29,13 +29,39 @@ async function fetchScreenshot(url: string): Promise<string | null> {
       "screenshot.type": "jpeg",
       "screenshot.quality": "85",
       "screenshot.fullPage": "false",
+      // Attend que le JS soit chargé avant de capturer
+      "screenshot.delay": "2000",
+      waitForSelector: "body",
     });
 
     const res = await fetch(`https://api.microlink.io?${params}`, {
-      signal: AbortSignal.timeout(20000),
+      signal: AbortSignal.timeout(25000),
     });
     const json = await res.json();
-    return json?.data?.screenshot?.url ?? null;
+    const screenshotUrl = json?.data?.screenshot?.url ?? null;
+
+    // Si la capture est vide ou échoue, essaie PageSpeed Insights (renvoie une capture base64)
+    if (!screenshotUrl) {
+      return await fetchPageSpeedScreenshot(url);
+    }
+
+    return screenshotUrl;
+  } catch {
+    return await fetchPageSpeedScreenshot(url).catch(() => null);
+  }
+}
+
+async function fetchPageSpeedScreenshot(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=desktop&key=`,
+      { signal: AbortSignal.timeout(20000) }
+    );
+    const json = await res.json();
+    const b64 = json?.lighthouseResult?.audits?.["final-screenshot"]?.details?.data;
+    if (!b64) return null;
+    // Retourne le data URI directement (compatible avec <img src="">)
+    return b64;
   } catch {
     return null;
   }
