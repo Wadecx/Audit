@@ -191,46 +191,98 @@ function buildSlides(url: string, data: AuditData & { globalScore: number }, cre
 </section>`;
   }).join("\n");
 
-  /* ── SLIDE 8 — Vision refonte — effet "wow" ── */
-  const s8 = `
-<section data-background-gradient="radial-gradient(ellipse 100% 80% at 50% 100%, rgba(124,58,237,.3) 0%, rgba(37,99,235,.15) 40%, rgba(10,10,15,1) 75%)">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:2rem;max-width:1000px;margin:0 auto;padding:1rem">
+  /* ── SLIDE 8 — Avant / Après ── */
+  const beforeBrowser = data.screenshotUrl ? `
+    <div style="border-radius:12px;overflow:hidden;border:2px solid rgba(248,113,113,.3);box-shadow:0 0 40px rgba(248,113,113,.12)">
+      <!-- Barre navigateur "Not Secure" -->
+      <div style="background:#1e1e1e;padding:.5rem .75rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="display:flex;gap:.3rem">
+          <span style="width:10px;height:10px;border-radius:50%;background:#f87171;display:inline-block"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#fbbf24;display:inline-block"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#4ade80;display:inline-block"></span>
+        </div>
+        <div style="flex:1;background:#111;border-radius:5px;padding:.25rem .6rem;display:flex;align-items:center;gap:.4rem">
+          <span style="font-size:.65rem;color:#f87171;font-weight:700">⚠ Site web non sécurisé</span>
+          <span style="font-size:.65rem;color:rgba(255,255,255,.3)">${domain}</span>
+        </div>
+      </div>
+      <!-- Screenshot avec overlay rouge -->
+      <div style="position:relative">
+        <img src="${data.screenshotUrl}" alt="Ancien site" style="width:100%;display:block;max-height:240px;object-fit:cover;object-position:top;filter:saturate(.6) brightness(.8)" />
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(248,113,113,.08),rgba(10,10,15,.7))"></div>
+      </div>
+    </div>` : `
+    <div style="border-radius:12px;border:2px solid rgba(248,113,113,.3);background:rgba(248,113,113,.05);height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem">
+      <div style="font-size:3rem">🚫</div>
+      <p style="color:rgba(248,113,113,.8);font-size:.85rem;text-align:center;padding:0 1rem">Site web non sécurisé<br/><span style="color:rgba(255,255,255,.3);font-size:.75rem">Design dépassé · Performances faibles · SEO inexistant</span></p>
+    </div>`;
 
-    <!-- Accroche wow -->
+  const s8 = `
+<section data-background="#0a0a0f">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;max-width:1050px;margin:0 auto;padding:1rem">
+
+    <!-- Titre -->
     <div style="text-align:center">
-      <p style="font-size:.7rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(167,139,250,.8);margin:0 0 .6rem">✦ Vision Refonte</p>
-      <h2 style="font-size:2.4rem;font-weight:900;letter-spacing:-.03em;margin:0;line-height:1.15;background:linear-gradient(135deg,#fff 30%,rgba(167,139,250,.9));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${data.vision.accroche}</h2>
+      <p style="font-size:.7rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(167,139,250,.7);margin:0 0 .4rem">Vision Refonte</p>
+      <h2 style="font-size:1.9rem;font-weight:900;color:#fff;margin:0;line-height:1.2">${data.vision.accroche}</h2>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;width:100%">
+    <!-- Avant / Après -->
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:1.5rem;align-items:center;width:100%">
 
-      <!-- Nouvelles fonctionnalités -->
-      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(167,139,250,.2);border-radius:16px;padding:1.5rem">
-        <h3 style="font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:#a78bfa;margin:0 0 1.1rem;display:flex;align-items:center;gap:.5rem">
-          <span style="width:18px;height:18px;border-radius:4px;background:rgba(167,139,250,.2);display:inline-flex;align-items:center;justify-content:center;font-size:.7rem">✦</span>
-          Nouvelles fonctionnalités
-        </h3>
-        <ol style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.65rem">
-          ${data.vision.fonctionnalites_proposees.map((f, i) => `
-          <li style="display:flex;align-items:flex-start;gap:.8rem;font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.45">
-            <span style="width:22px;height:22px;border-radius:6px;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.25);color:#a78bfa;font-size:.65rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.05rem">${i + 1}</span>
-            ${f}
-          </li>`).join("")}
-        </ol>
+      <!-- AVANT -->
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span style="background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:#f87171;font-size:.65rem;font-weight:800;padding:.2rem .7rem;border-radius:999px;text-transform:uppercase;letter-spacing:.1em">Avant</span>
+          <span style="font-size:.7rem;color:rgba(255,255,255,.3)">Votre site aujourd'hui</span>
+        </div>
+        ${beforeBrowser}
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+          ${["❌ Design daté", "❌ Non sécurisé", "❌ Invisible sur Google", "❌ Zéro conversion"].map(t => `
+          <span style="font-size:.6rem;color:#f87171;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.15);padding:.2rem .55rem;border-radius:5px">${t}</span>`).join("")}
+        </div>
       </div>
 
-      <!-- Idées IA -->
-      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(244,114,182,.2);border-radius:16px;padding:1.5rem">
-        <h3 style="font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:#f472b6;margin:0 0 1.1rem;display:flex;align-items:center;gap:.5rem">
-          <span style="width:18px;height:18px;border-radius:4px;background:rgba(244,114,182,.2);display:inline-flex;align-items:center;justify-content:center;font-size:.7rem">🤖</span>
-          Intelligence Artificielle
-        </h3>
-        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.75rem">
-          ${data.vision.idees_ia.map(idea => `
-          <li style="display:flex;align-items:flex-start;gap:.75rem;font-size:.88rem;color:rgba(255,255,255,.8);line-height:1.5">
-            <span style="color:#f472b6;flex-shrink:0;margin-top:.1rem;font-size:1rem">✦</span>${idea}
-          </li>`).join("")}
-        </ul>
+      <!-- Flèche centrale -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 0 24px rgba(124,58,237,.4)">→</div>
+      </div>
+
+      <!-- APRÈS -->
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span style="background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);color:#34d399;font-size:.65rem;font-weight:800;padding:.2rem .7rem;border-radius:999px;text-transform:uppercase;letter-spacing:.1em">Après</span>
+          <span style="font-size:.7rem;color:rgba(255,255,255,.3)">Votre site refait par Very Agency</span>
+        </div>
+        <!-- Maquette "nouveau site" -->
+        <div style="border-radius:12px;overflow:hidden;border:2px solid rgba(52,211,153,.25);box-shadow:0 0 40px rgba(52,211,153,.1)">
+          <!-- Barre navigateur sécurisée -->
+          <div style="background:#1a1a2e;padding:.5rem .75rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.06)">
+            <div style="display:flex;gap:.3rem">
+              <span style="width:10px;height:10px;border-radius:50%;background:#f87171;display:inline-block"></span>
+              <span style="width:10px;height:10px;border-radius:50%;background:#fbbf24;display:inline-block"></span>
+              <span style="width:10px;height:10px;border-radius:50%;background:#4ade80;display:inline-block"></span>
+            </div>
+            <div style="flex:1;background:rgba(255,255,255,.06);border-radius:5px;padding:.25rem .6rem;display:flex;align-items:center;gap:.4rem">
+              <span style="font-size:.65rem;color:#34d399;font-weight:700">🔒 Sécurisé</span>
+              <span style="font-size:.65rem;color:rgba(255,255,255,.4)">${domain}</span>
+            </div>
+          </div>
+          <!-- Maquette visuelle -->
+          <div style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);padding:2rem;min-height:200px;display:flex;flex-direction:column;gap:1rem">
+            <div style="height:12px;background:linear-gradient(90deg,#7c3aed,#2563eb);border-radius:6px;width:60%"></div>
+            <div style="height:8px;background:rgba(255,255,255,.15);border-radius:4px;width:80%"></div>
+            <div style="height:8px;background:rgba(255,255,255,.1);border-radius:4px;width:65%"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-top:.5rem">
+              ${["#7c3aed", "#2563eb", "#0ea5e9"].map(c => `<div style="height:60px;border-radius:8px;background:${c}22;border:1px solid ${c}44"></div>`).join("")}
+            </div>
+            <div style="height:32px;background:linear-gradient(90deg,#7c3aed,#2563eb);border-radius:8px;width:40%;margin-top:.25rem"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+          ${["✅ Design moderne", "✅ HTTPS sécurisé", "✅ SEO optimisé", "✅ +X% de conversions"].map(t => `
+          <span style="font-size:.6rem;color:#34d399;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.15);padding:.2rem .55rem;border-radius:5px">${t}</span>`).join("")}
+        </div>
       </div>
     </div>
   </div>
