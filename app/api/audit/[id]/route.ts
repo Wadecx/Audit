@@ -10,15 +10,16 @@ export async function GET(
 
     const audit = await prisma.audit.findUnique({
       where: { id },
+      include: { axes: true, vision: true },
     });
 
     if (!audit) {
-      return NextResponse.json({ error: "Audit non trouvé" }, { status: 404 });
+      return NextResponse.json({ error: "Audit non trouvé", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return NextResponse.json(audit);
   } catch (error) {
     console.error("Erreur récupération audit:", error);
-    return NextResponse.json({ error: "Erreur interne du serveur" }, { status: 500 });
+    return NextResponse.json({ error: "Erreur interne du serveur", code: "INTERNAL_ERROR" }, { status: 500 });
   }
 }

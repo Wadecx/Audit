@@ -1,16 +1,76 @@
 generator client {
-  provider        = "prisma-client-js"
-
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum AuditStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum AxisType {
+  DESIGN
+  TECHNIQUE
+  SEO
+  MARKETING
+  INNOVATION
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+/// Audit principal — une ligne par URL analysée
 model Audit {
-  id        String   @id @default(cuid())
-  url       String
-  data      Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String      @id @default(cuid())
+  url             String
+  domain          String
+  globalScore     Int
+  syntheseGlobale String
+  screenshotUrl   String?
+  mockupUrl       String?
+  status          AuditStatus @default(COMPLETED)
+  durationMs      Int?        // durée de l'audit en millisecondes
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  axes   AuditAxis[]
+  vision AuditVision?
+
+  @@index([domain])
+  @@index([globalScore])
+  @@index([createdAt])
+}
+
+/// Un axe d'audit (DESIGN, TECHNIQUE, SEO, MARKETING, INNOVATION)
+model AuditAxis {
+  id             String   @id @default(cuid())
+  auditId        String
+  axis           AxisType
+  score          Int
+  pointsForts    String[]
+  pointsFaibles  String[]
+  recommandation String
+
+  audit Audit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@unique([auditId, axis])
+  @@index([auditId])
+  @@index([axis, score]) // utile pour requêter "tous les sites avec SEO < 50"
+}
+
+/// Vision de refonte associée à un audit
+model AuditVision {
+  id                       String   @id @default(cuid())
+  auditId                  String   @unique
+  accroche                 String
+  fonctionnalitesProposees String[]
+  ideesIa                  String[]
+  nextSteps                String[]
+
+  audit Audit @relation(fields: [auditId], references: [id], onDelete: Cascade)
 }

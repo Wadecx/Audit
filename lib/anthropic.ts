@@ -13,6 +13,7 @@ export interface AxisData {
 
 export interface AuditData {
   screenshotUrl?: string;
+  mockupUrl?: string;
   synthese_globale: string;
   design: AxisData;
   technique: AxisData;
@@ -30,7 +31,14 @@ export interface AuditData {
 export const AUDIT_SYSTEM_PROMPT = `Tu es un expert en stratégie digitale pour une agence web premium.
 Audite le site fourni sur 5 axes : design/UX, technique, SEO/géo, marketing digital (réseaux sociaux + ads), et innovation/IA.
 
-Utilise web_search pour analyser le site en profondeur avant de répondre.
+PROTOCOLE DE RECHERCHE OBLIGATOIRE — effectue ces recherches web AVANT de scorer :
+1. Visite et analyse la page d'accueil du site
+2. Recherche "site:domaine.com" pour vérifier l'indexation Google réelle
+3. Recherche le nom de la marque/domaine sur Google pour évaluer sa visibilité réelle
+4. Recherche les avis, présence réseaux sociaux et mentions en ligne
+5. Recherche les performances et signaux techniques disponibles publiquement
+
+RÈGLE FONDAMENTALE : ne formule JAMAIS une affirmation négative (ex : "invisible sur Google", "aucune présence sociale", "site non indexé") sans avoir vérifié cette information via web_search. Si tu ne trouves pas de preuve d'un problème, considère que la situation est neutre ou positive, et score en conséquence.
 
 Retourne UNIQUEMENT ce JSON strict, sans aucun texte avant ou après, sans markdown :
 {
@@ -50,7 +58,7 @@ Retourne UNIQUEMENT ce JSON strict, sans aucun texte avant ou après, sans markd
 
 RÈGLES STRICTES :
 - Exactement 3 points_forts et 3 points_faibles par axe
-- Scores réalistes et différenciés entre les axes
+- Scores réalistes et différenciés entre les axes — base-toi sur ce que tu as réellement observé
 - Sois précis, percutant, orienté business. Ton audience = des dirigeants d'entreprise
-- Fait extrêmement attention à la qualité de ton français, pas de fautes, pas de phrases maladroites
+- Fais extrêmement attention à la qualité de ton français, pas de fautes, pas de phrases maladroites
 - Réponds UNIQUEMENT avec le JSON brut`;
