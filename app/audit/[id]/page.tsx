@@ -34,7 +34,6 @@ export default async function AuditPage({ params }: PageProps) {
     globalScore: audit.globalScore,
     synthese_globale: audit.syntheseGlobale,
     screenshotUrl: audit.screenshotUrl ?? undefined,
-    mockupUrl: audit.mockupUrl ?? undefined,
     design: axisMap["design"],
     technique: axisMap["technique"],
     seo: axisMap["seo"],

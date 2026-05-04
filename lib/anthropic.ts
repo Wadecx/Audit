@@ -13,7 +13,6 @@ export interface AxisData {
 
 export interface AuditData {
   screenshotUrl?: string;
-  mockupUrl?: string;
   synthese_globale: string;
   design: AxisData;
   technique: AxisData;

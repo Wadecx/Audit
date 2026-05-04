@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { anthropic, AUDIT_SYSTEM_PROMPT, AuditData } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
-import { StitchToolClient, Stitch, buildFifeSuffix } from "@google/stitch-sdk";
 
 // ─── Erreur métier typée ──────────────────────────────────────────────────────
 
@@ -18,14 +17,28 @@ class AuditError extends Error {
 
 // ─── Vérification d'accessibilité du site ─────────────────────────────────────
 
-async function checkSiteReachability(url: string): Promise<void> {
+const SSL_CODES = new Set([
+  "CERT_HAS_EXPIRED",
+  "ERR_TLS_CERT_ALTNAME_INVALID",
+  "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+  "SELF_SIGNED_CERT_IN_CHAIN",
+  "DEPTH_ZERO_SELF_SIGNED_CERT",
+  "ERR_SSL_WRONG_VERSION_NUMBER",
+]);
+
+async function tryHead(url: string): Promise<Response> {
+  return fetch(url, {
+    method: "HEAD",
+    signal: AbortSignal.timeout(12_000),
+    redirect: "follow",
+  });
+}
+
+// Returns the effective URL to use for the audit (HTTP fallback if HTTPS has SSL issues).
+async function checkSiteReachability(url: string): Promise<string> {
   let res: Response;
   try {
-    res = await fetch(url, {
-      method: "HEAD",
-      signal: AbortSignal.timeout(12_000),
-      redirect: "follow",
-    });
+    res = await tryHead(url);
   } catch (err) {
     const name = err instanceof Error ? err.name : "";
     const cause = (err as { cause?: { code?: string; message?: string } }).cause;
@@ -58,17 +71,17 @@ async function checkSiteReachability(url: string): Promise<void> {
         "CONN_REFUSED"
       );
     }
-    if (
-      code === "CERT_HAS_EXPIRED" ||
-      code === "ERR_TLS_CERT_ALTNAME_INVALID" ||
-      code === "UNABLE_TO_VERIFY_LEAF_SIGNATURE" ||
-      code === "SELF_SIGNED_CERT_IN_CHAIN"
-    ) {
-      throw new AuditError(
-        "Site inaccessible — certificat SSL invalide ou expiré",
-        400,
-        "SSL_ERROR"
-      );
+    if (SSL_CODES.has(code)) {
+      // SSL invalide → retry en HTTP pour continuer l'audit quand même
+      const httpUrl = url.replace(/^https:\/\//i, "http://");
+      try {
+        await tryHead(httpUrl);
+        return httpUrl;
+      } catch {
+        // HTTP aussi mort → on continue l'audit avec l'URL HTTPS d'origine
+        // (Claude peut quand même analyser via web_search)
+        return url;
+      }
     }
     if (code === "ECONNRESET" || code === "EPIPE") {
       throw new AuditError(
@@ -86,7 +99,7 @@ async function checkSiteReachability(url: string): Promise<void> {
   }
 
   // HEAD bloqué par le serveur → site accessible malgré tout
-  if (res.status === 405) return;
+  if (res.status === 405) return url;
 
   if (res.status === 404) {
     throw new AuditError(
@@ -116,6 +129,8 @@ async function checkSiteReachability(url: string): Promise<void> {
       "SERVER_ERROR"
     );
   }
+
+  return url;
 }
 
 // ─── Screenshot : Microlink (primaire) → PageSpeed (fallback) ────────────────
@@ -142,52 +157,6 @@ async function fetchScreenshot(url: string): Promise<string | null> {
     const json = await res.json();
     return json?.lighthouseResult?.audits?.["final-screenshot"]?.details?.data ?? null;
   } catch {
-    return null;
-  }
-}
-
-// ─── Mockup IA via Google Stitch ──────────────────────────────────────────────
-
-async function generateStitchMockup(
-  domain: string,
-  auditData: AuditData
-): Promise<string | null> {
-  const apiKey = process.env.STITCH_API_KEY;
-  if (!apiKey) return null;
-
-  try {
-    const client = new StitchToolClient({ apiKey });
-    const stitch = new Stitch(client);
-
-    const project = await stitch.createProject(`Refonte ${domain}`);
-
-    const features = auditData.vision.fonctionnalites_proposees.slice(0, 3).join(", ");
-    const designReco = auditData.design.recommandation;
-    const accroche = auditData.vision.accroche;
-
-    const prompt = `You are a world-class UI/UX designer. Redesign the homepage of "${domain}".
-
-BUSINESS CONTEXT: ${accroche}
-DESIGN IMPROVEMENT GOAL: ${designReco}
-
-REQUIREMENTS:
-- Keep the same industry/sector aesthetic (colors, mood, typography style appropriate for this type of business)
-- Modern, clean layout with strong visual hierarchy
-- Hero section with headline: "${accroche}"
-- Navigation bar with logo placeholder
-- 3 feature/service sections: ${features}
-- Clear CTA button
-- Professional, premium look — no dark tech or generic SaaS style unless the brand calls for it
-- Adapt the color palette and imagery style to the actual business sector
-- High visual fidelity, not wireframe`;
-
-    const screen = await project.generate(prompt, "DESKTOP", "GEMINI_3_1_PRO");
-    const baseImageUrl = await screen.getImage();
-    if (!baseImageUrl) return null;
-
-    return baseImageUrl + buildFifeSuffix({ width: 1280 });
-  } catch (err) {
-    console.error("Stitch mockup error:", err);
     return null;
   }
 }
@@ -236,10 +205,10 @@ export async function POST(request: NextRequest) {
 
     const domain = parsedUrl.hostname.replace(/^www\./, "");
 
-    // Vérification de l'accessibilité avant de lancer l'audit
-    await checkSiteReachability(normalizedUrl);
+    // Vérification de l'accessibilité avant de lancer l'audit (fallback HTTP si SSL invalide)
+    const effectiveUrl = await checkSiteReachability(normalizedUrl);
 
-    // Audit Anthropic + screenshot PageSpeed en parallèle
+    // Audit Anthropic + screenshot en parallèle
     const [message, screenshotUrl] = await Promise.all([
       anthropic.messages.create({
         model: "claude-haiku-4-5-20251001",
@@ -250,11 +219,11 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: "user",
-            content: `Audite ce site web : ${normalizedUrl}\n\nCommence par une recherche web approfondie sur ce site, puis génère le JSON d'audit complet.`,
+            content: `Audite ce site web : ${effectiveUrl}\n\nCommence par une recherche web approfondie sur ce site, puis génère le JSON d'audit complet.`,
           },
         ],
       }),
-      fetchScreenshot(normalizedUrl),
+      fetchScreenshot(effectiveUrl),
     ]);
 
     // Extraction du JSON depuis la réponse Anthropic
@@ -270,9 +239,6 @@ export async function POST(request: NextRequest) {
     }
 
     const auditData: AuditData = JSON.parse(fullText.slice(jsonStart, jsonEnd + 1));
-
-    // Mockup Stitch (optionnel)
-    const mockupUrl = await generateStitchMockup(domain, auditData);
 
     // Score global
     const scores = [
@@ -293,7 +259,6 @@ export async function POST(request: NextRequest) {
         globalScore,
         syntheseGlobale: auditData.synthese_globale,
         screenshotUrl: screenshotUrl ?? undefined,
-        mockupUrl: mockupUrl ?? undefined,
         status: "COMPLETED",
         durationMs,
         axes: {
@@ -346,7 +311,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ id: audit.id, globalScore, screenshotUrl, mockupUrl });
+    return NextResponse.json({ id: audit.id, globalScore, screenshotUrl });
   } catch (error) {
     console.error("Erreur audit:", error);
 

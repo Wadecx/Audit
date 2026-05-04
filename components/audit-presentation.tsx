@@ -145,7 +145,7 @@ function buildSlides(url: string, data: AuditData & { globalScore: number }, cre
 <section data-background="#0a0a0f">
   <div style="display:grid;grid-template-columns:220px 1fr;gap:3rem;align-items:start;max-width:980px;margin:0 auto;width:100%">
 
-    <div class="fragment fade-right" style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;padding-top:.5rem">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;padding-top:.5rem">
       <span style="font-size:3rem">${icon}</span>
       <h2 style="font-size:1.15rem;font-weight:800;color:#fff;text-align:center;margin:0;line-height:1.4">${label}</h2>
       <div style="position:relative;width:120px;height:120px">
@@ -186,132 +186,6 @@ function buildSlides(url: string, data: AuditData & { globalScore: number }, cre
   </div>
 </section>`;
   }).join("\n");
-
-  /* ── SLIDE 8 — Avant / Après ── */
-  const beforeBrowser = data.screenshotUrl ? `
-    <div style="border-radius:12px;overflow:hidden;border:2px solid rgba(248,113,113,.3);box-shadow:0 0 40px rgba(248,113,113,.12)">
-      <div style="background:#1e1e1e;padding:.5rem .75rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div style="display:flex;gap:.3rem">
-          <span style="width:10px;height:10px;border-radius:50%;background:#f87171;display:inline-block"></span>
-          <span style="width:10px;height:10px;border-radius:50%;background:#fbbf24;display:inline-block"></span>
-          <span style="width:10px;height:10px;border-radius:50%;background:#4ade80;display:inline-block"></span>
-        </div>
-        <div style="flex:1;background:#111;border-radius:5px;padding:.25rem .6rem;display:flex;align-items:center;gap:.4rem">
-          <span style="font-size:.65rem;color:#f87171;font-weight:700">⚠ Site web non sécurisé</span>
-          <span style="font-size:.65rem;color:rgba(255,255,255,.3)">${domain}</span>
-        </div>
-      </div>
-      <div style="position:relative">
-        <img src="${data.screenshotUrl}" alt="Ancien site" style="width:100%;display:block;max-height:240px;object-fit:cover;object-position:top;filter:saturate(.6) brightness(.8)" />
-        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(248,113,113,.08),rgba(10,10,15,.7))"></div>
-      </div>
-    </div>` : `
-    <div style="border-radius:12px;overflow:hidden;border:2px solid rgba(248,113,113,.3);box-shadow:0 0 40px rgba(248,113,113,.08)">
-      <div style="background:#1e1e1e;padding:.5rem .75rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div style="display:flex;gap:.3rem">
-          <span style="width:10px;height:10px;border-radius:50%;background:#f87171;display:inline-block"></span>
-          <span style="width:10px;height:10px;border-radius:50%;background:#fbbf24;display:inline-block"></span>
-          <span style="width:10px;height:10px;border-radius:50%;background:#4ade80;display:inline-block"></span>
-        </div>
-        <div style="flex:1;background:#111;border-radius:5px;padding:.25rem .6rem;display:flex;align-items:center;gap:.4rem">
-          <span style="font-size:.65rem;color:#f87171;font-weight:700">⚠ Site web non sécurisé</span>
-          <span style="font-size:.65rem;color:rgba(255,255,255,.3)">${domain}</span>
-        </div>
-      </div>
-      <div style="background:#f5f5f5;padding:1.5rem;min-height:200px;display:flex;flex-direction:column;gap:.75rem;filter:saturate(.4) brightness(.7)">
-        <div style="height:40px;background:#ccc;border-radius:4px;width:100%"></div>
-        <div style="display:flex;gap:.75rem">
-          <div style="height:120px;background:#ddd;border-radius:4px;width:60%"></div>
-          <div style="flex:1;display:flex;flex-direction:column;gap:.5rem">
-            <div style="height:16px;background:#ccc;border-radius:3px"></div>
-            <div style="height:16px;background:#ccc;border-radius:3px;width:80%"></div>
-            <div style="height:16px;background:#ccc;border-radius:3px;width:60%"></div>
-          </div>
-        </div>
-        <div style="height:20px;background:#bbb;border-radius:3px;width:40%"></div>
-      </div>
-    </div>`;
-
-  const s8 = `
-<section data-background="#0a0a0f">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;max-width:1050px;margin:0 auto;padding:1rem">
-
-    <div class="fragment fade-down" style="text-align:center">
-      <p style="font-size:.7rem;text-transform:uppercase;letter-spacing:.2em;color:rgba(167,139,250,.7);margin:0 0 .4rem">Vision Refonte</p>
-      <h2 style="font-size:1.9rem;font-weight:900;color:#fff;margin:0;line-height:1.2">${data.vision.accroche}</h2>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:1.5rem;align-items:center;width:100%">
-
-      <div class="fragment fade-right" style="display:flex;flex-direction:column;gap:.75rem">
-        <div style="display:flex;align-items:center;gap:.5rem">
-          <span style="background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:#f87171;font-size:.65rem;font-weight:800;padding:.2rem .7rem;border-radius:999px;text-transform:uppercase;letter-spacing:.1em">Avant</span>
-          <span style="font-size:.7rem;color:rgba(255,255,255,.3)">Votre site aujourd'hui</span>
-        </div>
-        ${beforeBrowser}
-        <div style="display:flex;flex-wrap:wrap;gap:.4rem">
-          ${["❌ Design daté", "❌ Non sécurisé", "❌ Invisible sur Google", "❌ Zéro conversion"].map(t => `
-          <span style="font-size:.6rem;color:#f87171;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.15);padding:.2rem .55rem;border-radius:5px">${t}</span>`).join("")}
-        </div>
-      </div>
-
-      <div class="fragment zoom-in" style="display:flex;flex-direction:column;align-items:center;gap:.5rem">
-        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 0 24px rgba(124,58,237,.4)">→</div>
-      </div>
-
-      <div class="fragment fade-left" style="display:flex;flex-direction:column;gap:.75rem">
-        <div style="display:flex;align-items:center;gap:.5rem">
-          <span style="background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);color:#34d399;font-size:.65rem;font-weight:800;padding:.2rem .7rem;border-radius:999px;text-transform:uppercase;letter-spacing:.1em">Après</span>
-          <span style="font-size:.7rem;color:rgba(255,255,255,.3)">Votre site refait par Very Agency</span>
-        </div>
-        <div style="border-radius:12px;overflow:hidden;border:2px solid rgba(52,211,153,.25);box-shadow:0 0 40px rgba(52,211,153,.1)">
-          <div style="background:#1a1a2e;padding:.5rem .75rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.06)">
-            <div style="display:flex;gap:.3rem">
-              <span style="width:10px;height:10px;border-radius:50%;background:#f87171;display:inline-block"></span>
-              <span style="width:10px;height:10px;border-radius:50%;background:#fbbf24;display:inline-block"></span>
-              <span style="width:10px;height:10px;border-radius:50%;background:#4ade80;display:inline-block"></span>
-            </div>
-            <div style="flex:1;background:rgba(255,255,255,.06);border-radius:5px;padding:.25rem .6rem;display:flex;align-items:center;gap:.4rem">
-              <span style="font-size:.65rem;color:#34d399;font-weight:700">🔒 Sécurisé</span>
-              <span style="font-size:.65rem;color:rgba(255,255,255,.4)">${domain}</span>
-            </div>
-          </div>
-          ${data.mockupUrl ? `
-          <div style="position:relative">
-            <img src="${data.mockupUrl}" alt="Maquette nouveau site" style="width:100%;display:block;max-height:240px;object-fit:cover;object-position:top" />
-            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(10,10,15,.7))"></div>
-            <div style="position:absolute;bottom:.5rem;right:.6rem;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);border-radius:6px;padding:.2rem .6rem;font-size:.6rem;color:#34d399;font-weight:700">✨ Généré par IA</div>
-          </div>` : `
-          <div style="background:#fafafa;font-family:sans-serif;overflow:hidden">
-            <div style="background:#fff;padding:.5rem 1rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb">
-              <span style="font-weight:800;font-size:.8rem;color:#111;text-transform:uppercase;letter-spacing:.05em">${domain}</span>
-              <div style="display:flex;gap:.8rem">
-                ${["Accueil","Services","Contact"].map(t => `<span style="font-size:.6rem;color:#666">${t}</span>`).join("")}
-              </div>
-              <div style="background:#111;color:#fff;padding:.25rem .65rem;border-radius:5px;font-size:.6rem;font-weight:700">Réserver</div>
-            </div>
-            <div style="padding:1.25rem 1rem;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)">
-              <p style="font-size:.55rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin:0 0 .4rem">Nouveau ${domain}</p>
-              <h3 style="font-size:.85rem;font-weight:800;color:#fff;margin:0 0 .6rem;line-height:1.35">${data.vision.accroche.length > 70 ? data.vision.accroche.slice(0, 70) + "…" : data.vision.accroche}</h3>
-              <div style="display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(90deg,#7c3aed,#2563eb);padding:.3rem .8rem;border-radius:6px;font-size:.6rem;font-weight:700;color:#fff">Découvrir →</div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;padding:.75rem .8rem;background:#f3f4f6">
-              ${data.vision.fonctionnalites_proposees.slice(0, 3).map((f, i) => `
-              <div style="background:#fff;border-radius:7px;padding:.6rem .7rem;border:1px solid #e5e7eb">
-                <div style="width:18px;height:18px;border-radius:5px;background:${["#7c3aed","#2563eb","#0ea5e9"][i]};margin-bottom:.4rem"></div>
-                <p style="font-size:.58rem;color:#111;margin:0;font-weight:600;line-height:1.4">${f.length > 36 ? f.slice(0, 36) + "…" : f}</p>
-              </div>`).join("")}
-            </div>
-          </div>`}
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:.4rem">
-          ${["✅ Design moderne", "✅ HTTPS sécurisé", "✅ SEO optimisé", "✅ +X% de conversions"].map(t => `
-          <span style="font-size:.6rem;color:#34d399;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.15);padding:.2rem .55rem;border-radius:5px">${t}</span>`).join("")}
-        </div>
-      </div>
-    </div>
-  </div>
-</section>`;
 
   /* ── SLIDE 9 — IA & Innovation ── */
   const iaColors = [
@@ -368,7 +242,7 @@ function buildSlides(url: string, data: AuditData & { globalScore: number }, cre
   </div>
 </section>`;
 
-  return [s1, s2, axisSlides, s8, s9, s10].join("\n");
+  return [s1, s2, axisSlides, s9, s10].join("\n");
 }
 
 export function AuditPresentation({ url, data, createdAt }: Props) {
